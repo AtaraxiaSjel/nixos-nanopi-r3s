@@ -1,0 +1,27 @@
+name: "Update flake inputs"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 1 * *" # monthly on the 1st at 06:00 UTC
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  nix-flake-update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: DeterminateSystems/determinate-nix-action@v3
+      - uses: DeterminateSystems/update-flake-lock@main
+        id: update
+        with:
+          pr-assignees: AtaraxiaSjel
+          commit-msg: "chore(flake): bump inputs"
+          pr-title: "chore(flake): bump inputs"
+          token: ${{ github.token }}
+      - run: "gh pr merge --auto --merge ${{ steps.update.outputs.pull-request-number }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
